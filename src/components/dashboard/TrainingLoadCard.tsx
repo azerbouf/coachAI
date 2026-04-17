@@ -10,6 +10,7 @@ import {
   Cell,
 } from 'recharts';
 import { BarChart2 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { TrendIndicator } from '@/components/shared/TrendIndicator';
 import type { Activity } from '@/types/activity';
 import { format, subDays, parseISO, isSameDay } from 'date-fns';
@@ -49,12 +50,13 @@ export function TrainingLoadCard({ activities }: TrainingLoadCardProps) {
   const maxLoad = Math.max(...last7Days.map((d) => d.load), 1);
 
   return (
-    <div className="card h-full">
+    <Card className="h-full">
+      <CardContent className="p-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <BarChart2 className="w-4 h-4 text-accent-orange" />
-          <span className="text-sm font-medium text-text-secondary">Training Load</span>
+          <span className="text-sm font-medium text-muted-foreground">Training Load</span>
         </div>
         <TrendIndicator
           value={changePercent}
@@ -120,6 +122,7 @@ export function TrainingLoadCard({ activities }: TrainingLoadCardProps) {
           </BarChart>
         </ResponsiveContainer>
       </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

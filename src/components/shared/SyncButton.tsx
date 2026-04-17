@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { RefreshCw, CheckCircle2, XCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface SyncButtonProps {
@@ -61,35 +62,27 @@ export function SyncButton({
 
   if (compact) {
     return (
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={handleSync}
         disabled={status === 'syncing'}
-        className={cn(
-          'p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors',
-          status === 'syncing' && 'opacity-50 cursor-not-allowed',
-          className
-        )}
+        className={cn('w-8 h-8 text-text-secondary', className)}
         title="Sync Garmin data"
       >
-        <RefreshCw
-          className={cn(
-            'w-4 h-4',
-            status === 'syncing' && 'animate-spin'
-          )}
-        />
-      </button>
+        <RefreshCw className={cn('w-4 h-4', status === 'syncing' && 'animate-spin')} />
+      </Button>
     );
   }
 
   return (
     <div className={cn('space-y-1', className)}>
-      <button
+      <Button
+        variant="outline"
+        size="sm"
         onClick={handleSync}
         disabled={status === 'syncing'}
-        className={cn(
-          'btn btn-secondary w-full text-xs',
-          status === 'syncing' && 'opacity-50 cursor-not-allowed'
-        )}
+        className="w-full text-xs"
       >
         {status === 'syncing' ? (
           <>
@@ -112,7 +105,7 @@ export function SyncButton({
             Sync Garmin
           </>
         )}
-      </button>
+      </Button>
       {message && (
         <p
           className={cn(

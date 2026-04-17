@@ -1,6 +1,7 @@
 'use client';
 
 import { Sparkles, Lightbulb } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import type { DailyTip } from '@/types/coach';
 
 interface CoachInsightBannerProps {
@@ -52,14 +53,17 @@ export function CoachInsightBanner({ tip }: CoachInsightBannerProps) {
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-sm font-semibold text-text-primary leading-tight">
+            <h3 className="text-sm font-semibold text-foreground leading-tight">
               {tip.headline}
             </h3>
-            <span className="badge text-[9px] flex items-center gap-0.5"
-              style={{ color: '#a78bfa', backgroundColor: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)' }}>
+            <Badge
+              variant="outline"
+              className="text-[9px] font-semibold uppercase tracking-wide gap-0.5 px-1.5 py-0"
+              style={{ color: '#a78bfa', backgroundColor: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)' }}
+            >
               <Sparkles className="w-2.5 h-2.5" />
               AI
-            </span>
+            </Badge>
           </div>
           <p className="text-sm text-text-secondary leading-relaxed">
             {tip.tip}

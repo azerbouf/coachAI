@@ -50,11 +50,11 @@ export function SplitsTable({ splits, avgPace }: SplitsTableProps) {
             return (
               <tr
                 key={split.splitNumber}
-                className="border-b border-border/50 hover:bg-white/3 transition-colors"
+                className="border-b border-border/50 hover:bg-black/3 transition-colors"
               >
                 <td className="py-2 px-3 text-text-secondary">
                   <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center text-xs font-mono">
+                    <span className="w-5 h-5 rounded-md bg-black/5 flex items-center justify-center text-xs font-mono">
                       {split.splitNumber}
                     </span>
                     {isPartialKm && (

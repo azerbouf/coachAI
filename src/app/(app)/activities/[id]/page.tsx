@@ -2,18 +2,15 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import { PaceChart } from '@/components/activities/PaceChart';
-import { HRZoneChart } from '@/components/activities/HRZoneChart';
-import { SplitsTable } from '@/components/activities/SplitsTable';
-import { RunDynamicsPanel } from '@/components/activities/RunDynamicsPanel';
-import { CoachAnalysisPanel } from '@/components/activities/CoachAnalysisPanel';
-import { MetricBadge } from '@/components/shared/MetricBadge';
-import { ArrowLeft, Heart, Flame, Mountain, Clock, Route } from 'lucide-react';
+import { ActivityPanels } from '@/components/activities/ActivityPanels';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Clock, Heart, Mountain } from 'lucide-react';
 import { formatPace, formatDuration, formatDistance } from '@/lib/utils/pace';
 import { getTrainingEffectLabel, getTrainingEffectColor } from '@/lib/utils/zones';
 import { formatActivityDate } from '@/lib/utils/date';
 import type { Activity } from '@/types/activity';
-import type { CoachAnalysis } from '@/types/coach';
+import type { CoachAnalysis, RunAnalysis } from '@/types/coach';
+import type { DailyWellness } from '@/types/recovery';
 import { getCachedActivityAnalysis } from '@/lib/claude/analyze';
 
 export async function generateMetadata({
@@ -101,164 +98,122 @@ export default async function ActivityDetailPage({
     }
   }
 
+  // Fetch wellness for activity date
+  const activityDate = activity.startTime.split('T')[0];
+  const { data: wellnessRaw } = await supabase
+    .from('daily_wellness')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('date', activityDate)
+    .single();
+
+  const wellness: DailyWellness | null = wellnessRaw
+    ? {
+        id: wellnessRaw.id,
+        userId: wellnessRaw.user_id,
+        date: wellnessRaw.date,
+        hrvLastNightMs: wellnessRaw.hrv_last_night_ms ?? undefined,
+        hrvBaselineLow: wellnessRaw.hrv_baseline_low ?? undefined,
+        hrvBaselineHigh: wellnessRaw.hrv_baseline_high ?? undefined,
+        hrvStatus: wellnessRaw.hrv_status ?? undefined,
+        sleepScore: wellnessRaw.sleep_score ?? undefined,
+        sleepDurationSeconds: wellnessRaw.sleep_duration_seconds ?? undefined,
+        bodyBatteryCharged: wellnessRaw.body_battery_charged ?? undefined,
+        bodyBatteryDrained: wellnessRaw.body_battery_drained ?? undefined,
+        bodyBatteryHighest: wellnessRaw.body_battery_highest ?? undefined,
+        bodyBatteryLowest: wellnessRaw.body_battery_lowest ?? undefined,
+        avgStressLevel: wellnessRaw.avg_stress_level ?? undefined,
+        maxStressLevel: wellnessRaw.max_stress_level ?? undefined,
+        trainingReadinessScore: wellnessRaw.training_readiness_score ?? undefined,
+        trainingReadinessDescription: wellnessRaw.training_readiness_description ?? undefined,
+        restingHR: wellnessRaw.resting_hr ?? undefined,
+        totalSteps: wellnessRaw.total_steps ?? undefined,
+        createdAt: wellnessRaw.created_at,
+        updatedAt: wellnessRaw.updated_at,
+      }
+    : null;
+
+  const run = analysis?.fullAnalysis as RunAnalysis | null;
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      {/* Back nav */}
-      <div className="flex items-center gap-3">
+
+      {/* ── FLAT HEADER ── */}
+      <div className="pb-5 border-b border-border">
+        {/* Back link */}
         <Link
           href="/activities"
-          className="flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary transition-colors mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
           All Activities
         </Link>
-      </div>
 
-      {/* Hero header */}
-      <div className="card">
-        <div className="flex items-start justify-between gap-4 mb-6">
+        {/* Title row */}
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span
-                className="badge"
-                style={{
-                  color: teColor,
-                  backgroundColor: `${teColor}15`,
-                  border: `1px solid ${teColor}30`,
-                }}
-              >
-                {teLabel}
-              </span>
-              {activity.vo2maxEstimate && (
-                <span className="badge" style={{ color: '#a78bfa', backgroundColor: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)' }}>
-                  VO₂max {activity.vo2maxEstimate.toFixed(1)}
-                </span>
+            <h1 className="text-3xl font-extrabold text-text-primary mb-1.5 leading-tight">
+              {activity.name}
+            </h1>
+            <p className="text-sm text-text-muted flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span>{formatDistance(activity.distanceMeters, 2)} km</span>
+              <span>·</span>
+              <span>{formatDuration(activity.durationSeconds)}</span>
+              <span>·</span>
+              <span>{formatActivityDate(activity.startTime)}</span>
+              {activity.weatherCondition && (
+                <><span>·</span><span>{activity.weatherCondition}</span></>
               )}
-            </div>
-            <h1 className="text-xl font-bold text-text-primary">{activity.name}</h1>
-            <p className="text-sm text-text-muted mt-1">
-              {formatActivityDate(activity.startTime)}
-              {activity.weatherCondition && ` · ${activity.weatherCondition}`}
-              {activity.temperatureCelsius !== undefined &&
-                ` · ${activity.temperatureCelsius.toFixed(0)}°C`}
+              {activity.temperatureCelsius != null && (
+                <><span>·</span><span>{activity.temperatureCelsius.toFixed(0)}°C</span></>
+              )}
             </p>
           </div>
-        </div>
-
-        {/* Hero stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          <div className="text-center sm:text-left">
-            <div className="stat-value text-2xl text-accent-green">
-              {formatDistance(activity.distanceMeters, 2)}
-            </div>
-            <div className="stat-label flex items-center gap-1">
-              <Route className="w-3 h-3" />
-              km
-            </div>
-          </div>
-
-          <div className="text-center sm:text-left">
-            <div className="stat-value text-2xl">
-              {formatPace(activity.avgPaceSecondsPerKm)}
-            </div>
-            <div className="stat-label">avg pace</div>
-          </div>
-
-          <div className="text-center sm:text-left">
-            <div className="stat-value text-2xl">
-              {formatDuration(activity.durationSeconds)}
-            </div>
-            <div className="stat-label flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              time
-            </div>
-          </div>
-
-          <div className="text-center sm:text-left">
-            <div className="stat-value text-2xl" style={{ color: activity.elevationGainMeters ? '#60a5fa' : '#475569' }}>
-              +{activity.elevationGainMeters?.toFixed(0) ?? '0'}
-            </div>
-            <div className="stat-label flex items-center gap-1">
-              <Mountain className="w-3 h-3" />
-              m gain
-            </div>
-          </div>
-
-          <div className="text-center sm:text-left">
-            <div className="stat-value text-2xl" style={{ color: '#f87171' }}>
-              {activity.avgHR ?? '—'}
-            </div>
-            <div className="stat-label flex items-center gap-1">
-              <Heart className="w-3 h-3" />
-              avg HR
-            </div>
-          </div>
-
-          <div className="text-center sm:text-left">
-            <div className="stat-value text-2xl" style={{ color: '#fbbf24' }}>
-              {activity.calories ?? '—'}
-            </div>
-            <div className="stat-label flex items-center gap-1">
-              <Flame className="w-3 h-3" />
-              kcal
-            </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Badge
+              variant="outline"
+              className="text-[10px] font-semibold uppercase tracking-wide"
+              style={{ color: teColor, backgroundColor: `${teColor}18`, border: `1px solid ${teColor}30` }}
+            >
+              {teLabel}
+            </Badge>
+            {activity.vo2maxEstimate && (
+              <Badge
+                variant="outline"
+                className="text-[10px] font-semibold uppercase tracking-wide"
+                style={{ color: '#7c3aed', backgroundColor: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)' }}
+              >
+                VO₂max {activity.vo2maxEstimate.toFixed(1)}
+              </Badge>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Main content grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left column */}
-        <div className="space-y-6">
-          {/* Pace chart */}
-          <div className="card">
-            <h2 className="section-header mb-4">Pace per km</h2>
-            <PaceChart
-              splits={activity.splits}
-              avgPace={activity.avgPaceSecondsPerKm}
-            />
-          </div>
-
-          {/* HR Zone chart */}
-          <div className="card">
-            <h2 className="section-header mb-4">HR Zone Distribution</h2>
-            <HRZoneChart
-              hrZones={activity.hrZones}
-              durationSeconds={activity.durationSeconds}
-              maxHR={activity.maxHR ?? 190}
-            />
-          </div>
-
-          {/* Splits table */}
-          {activity.splits.length > 0 && (
-            <div className="card">
-              <h2 className="section-header mb-4">Splits</h2>
-              <SplitsTable
-                splits={activity.splits}
-                avgPace={activity.avgPaceSecondsPerKm}
-              />
-            </div>
-          )}
+      {/* ── STATS BAR ── */}
+      <div className="flex items-center gap-6 flex-wrap">
+        <div className="flex items-center gap-2 text-sm">
+          <Clock className="w-4 h-4 text-text-muted" />
+          <span className="text-[11px] uppercase tracking-widest text-text-muted font-semibold">Pace</span>
+          <span className="font-bold text-text-primary ml-0.5">{formatPace(activity.avgPaceSecondsPerKm)} /km</span>
         </div>
-
-        {/* Right column */}
-        <div className="space-y-6">
-          {/* Running dynamics */}
-          <div className="card">
-            <h2 className="section-header mb-4">Running Dynamics</h2>
-            <RunDynamicsPanel activity={activity} />
+        {activity.avgHR && (
+          <div className="flex items-center gap-2 text-sm">
+            <Heart className="w-4 h-4 text-text-muted" />
+            <span className="text-[11px] uppercase tracking-widest text-text-muted font-semibold">Avg HR</span>
+            <span className="font-bold ml-0.5" style={{ color: '#ef4444' }}>{activity.avgHR} bpm</span>
           </div>
-
-          {/* Coach analysis */}
-          <div className="card">
-            <h2 className="section-header mb-4">Coach Analysis</h2>
-            <CoachAnalysisPanel
-              activityId={activity.id}
-              initialAnalysis={analysis}
-            />
+        )}
+        {(activity.elevationGainMeters ?? 0) > 0 && (
+          <div className="flex items-center gap-2 text-sm">
+            <Mountain className="w-4 h-4 text-text-muted" />
+            <span className="text-[11px] uppercase tracking-widest text-text-muted font-semibold">Elevation</span>
+            <span className="font-bold text-text-primary ml-0.5">+{activity.elevationGainMeters!.toFixed(0)} m</span>
           </div>
-        </div>
+        )}
       </div>
+
+      <ActivityPanels activity={activity} analysis={analysis} wellness={wellness} />
     </div>
   );
 }

@@ -91,11 +91,11 @@ export function getHRColor(hr: number, maxHR = 190): string {
  * Get color based on avg HR for list display
  */
 export function getHRStatusColor(avgHR: number): string {
-  if (avgHR < 130) return '#34d399'; // green - easy
-  if (avgHR < 150) return '#60a5fa'; // blue - moderate
-  if (avgHR < 165) return '#fbbf24'; // yellow - tempo
-  if (avgHR < 175) return '#fb923c'; // orange - threshold
-  return '#f87171'; // red - max
+  if (avgHR < 130) return '#16a34a'; // green - easy
+  if (avgHR < 150) return '#2563eb'; // blue - moderate
+  if (avgHR < 165) return '#d97706'; // yellow - tempo
+  if (avgHR < 175) return '#ea580c'; // orange - threshold
+  return '#dc2626'; // red - max
 }
 
 /**
@@ -115,13 +115,13 @@ export function getTrainingEffectLabel(value?: number): string {
  * Get training effect color
  */
 export function getTrainingEffectColor(value?: number): string {
-  if (!value) return '#475569';
-  if (value < 1.0) return '#475569';
-  if (value < 2.0) return '#34d399';
-  if (value < 3.0) return '#60a5fa';
-  if (value < 4.0) return '#a78bfa';
-  if (value < 4.5) return '#fb923c';
-  return '#f87171';
+  if (!value) return '#94a3b8';
+  if (value < 1.0) return '#94a3b8';
+  if (value < 2.0) return '#16a34a';
+  if (value < 3.0) return '#2563eb';
+  if (value < 4.0) return '#7c3aed';
+  if (value < 4.5) return '#ea580c';
+  return '#dc2626';
 }
 
 /**

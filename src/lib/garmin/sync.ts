@@ -17,6 +17,8 @@ export interface SyncOptions {
   activitiesLimit?: number;
   syncWellnessDays?: number;
   fullSync?: boolean;
+  oauth1Token?: Record<string, unknown>;
+  oauth2Token?: Record<string, unknown>;
 }
 
 export interface SyncResult {
@@ -62,8 +64,16 @@ export async function syncGarminData(options: SyncOptions): Promise<SyncResult> 
   let wellnessDaysSynced = 0;
 
   try {
-    // Connect to Garmin
-    const garminClient = await createGarminClient(garminEmail, garminPassword);
+    // Connect to Garmin — use stored OAuth tokens if available
+    let garminClient;
+    if (options.oauth1Token && options.oauth2Token) {
+      const { GarminConnect } = await import('garmin-connect');
+      garminClient = new GarminConnect({ username: garminEmail, password: '' });
+      (garminClient as unknown as { loadToken: (o1: unknown, o2: unknown) => void })
+        .loadToken(options.oauth1Token, options.oauth2Token);
+    } else {
+      garminClient = await createGarminClient(garminEmail, garminPassword);
+    }
 
     // Determine how many activities to fetch
     let limit = activitiesLimit;

@@ -82,7 +82,7 @@ export function HRVTrendChart({ data }: HRVTrendChartProps) {
           </defs>
           <CartesianGrid
             strokeDasharray="3 3"
-            stroke="rgba(255,255,255,0.04)"
+            stroke="rgba(0,0,0,0.05)"
             vertical={false}
           />
           <XAxis

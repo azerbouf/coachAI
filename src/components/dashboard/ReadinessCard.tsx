@@ -1,6 +1,7 @@
 'use client';
 
 import { Gauge } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import type { DailyWellness } from '@/types/recovery';
 
 interface ReadinessCardProps {
@@ -41,7 +42,7 @@ function CircularProgress({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="rgba(255,255,255,0.06)"
+          stroke="rgba(0,0,0,0.06)"
           strokeWidth={8}
         />
         <circle
@@ -150,11 +151,12 @@ export function ReadinessCard({ wellness }: ReadinessCardProps) {
   const recommendation = getRecommendation(displayScore);
 
   return (
-    <div className="card h-full">
+    <Card className="h-full">
+      <CardContent className="p-5">
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <Gauge className="w-4 h-4 text-accent-blue" />
-        <span className="text-sm font-medium text-text-secondary">Training Readiness</span>
+        <span className="text-sm font-medium text-muted-foreground">Training Readiness</span>
       </div>
 
       <div className="flex items-start gap-4">
@@ -174,7 +176,7 @@ export function ReadinessCard({ wellness }: ReadinessCardProps) {
                     {factor.score}
                   </span>
                 </div>
-                <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                <div className="h-1 bg-black/5 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-700"
                     style={{
@@ -195,10 +197,11 @@ export function ReadinessCard({ wellness }: ReadinessCardProps) {
 
       {/* Recommendation */}
       <div className="mt-4 pt-3 border-t border-border">
-        <p className="text-xs text-text-secondary leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           {wellness ? recommendation : 'No wellness data available. Sync Garmin to see training readiness.'}
         </p>
       </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

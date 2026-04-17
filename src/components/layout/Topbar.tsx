@@ -7,13 +7,14 @@ import {
   LogOut,
   Settings,
   User,
-  RefreshCw,
   CheckCircle2,
   AlertCircle,
 } from 'lucide-react';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import { formatDashboardDate, formatLastSync } from '@/lib/utils/date';
+import { SyncButton } from '@/components/shared/SyncButton';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface TopbarProps {
@@ -43,7 +44,7 @@ export function Topbar({ user, profile }: TopbarProps) {
   }
 
   return (
-    <header className="h-16 border-b border-border bg-surface/50 backdrop-blur-sm flex items-center justify-between px-6 flex-shrink-0">
+    <header className="h-16 border-b border-border bg-surface flex items-center justify-between px-6 flex-shrink-0">
       {/* Left: Date */}
       <div className="flex items-center gap-3">
         <div className="text-sm font-medium text-text-primary">
@@ -67,11 +68,13 @@ export function Topbar({ user, profile }: TopbarProps) {
         </div>
       </div>
 
-      {/* Right: User dropdown */}
-      <div className="relative">
+      {/* Right: Sync + User dropdown */}
+      <div className="flex items-center gap-2">
+        <SyncButton userId={user.id} compact />
+        <div className="relative">
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+          className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-black/4 transition-colors"
         >
           {profile?.avatar_url ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -81,8 +84,8 @@ export function Topbar({ user, profile }: TopbarProps) {
               className="w-7 h-7 rounded-full border border-border"
             />
           ) : (
-            <div className="w-7 h-7 rounded-full bg-accent-purple/20 border border-accent-purple/30 flex items-center justify-center">
-              <span className="text-[10px] font-bold text-accent-purple">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: '#e8622a' }}>
+              <span className="text-[10px] font-bold text-white">
                 {displayName.slice(0, 2).toUpperCase()}
               </span>
             </div>
@@ -104,7 +107,7 @@ export function Topbar({ user, profile }: TopbarProps) {
               className="fixed inset-0 z-10"
               onClick={() => setDropdownOpen(false)}
             />
-            <div className="absolute right-0 top-full mt-1.5 w-48 bg-surface border border-border rounded-xl shadow-card-hover z-20 py-1 overflow-hidden">
+            <div className="absolute right-0 top-full mt-1.5 w-48 bg-surface border border-border rounded-xl shadow-lg z-20 py-1 overflow-hidden">
               <div className="px-3 py-2 border-b border-border mb-1">
                 <div className="text-xs font-medium text-text-primary truncate">
                   {displayName}
@@ -114,20 +117,20 @@ export function Topbar({ user, profile }: TopbarProps) {
                 </div>
               </div>
 
-              <button className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors">
+              <button className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-black/4 transition-colors">
                 <User className="w-4 h-4" />
                 Profile
               </button>
 
-              <button className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors">
+              <Link href="/settings" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-black/4 transition-colors">
                 <Settings className="w-4 h-4" />
                 Settings
-              </button>
+              </Link>
 
               <div className="border-t border-border mt-1 pt-1">
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                  className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-red-500 hover:text-red-600 hover:bg-red-50 transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                   Sign out
@@ -136,6 +139,7 @@ export function Topbar({ user, profile }: TopbarProps) {
             </div>
           </>
         )}
+      </div>
       </div>
     </header>
   );

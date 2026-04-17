@@ -36,7 +36,7 @@ function CircularRing({
             cy={size / 2}
             r={radius}
             fill="none"
-            stroke="rgba(255,255,255,0.06)"
+            stroke="rgba(0,0,0,0.06)"
             strokeWidth={7}
           />
           <circle
@@ -151,7 +151,7 @@ export function RecoveryStatusCard({ wellness }: RecoveryStatusCardProps) {
             <div className="flex items-center justify-between">
               <span className="text-xs text-text-muted">Avg Stress</span>
               <div className="flex items-center gap-2">
-                <div className="w-24 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                <div className="w-24 h-1.5 bg-black/5 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full"
                     style={{
@@ -177,7 +177,7 @@ export function RecoveryStatusCard({ wellness }: RecoveryStatusCardProps) {
             <div className="flex items-center justify-between mt-2">
               <span className="text-xs text-text-muted">Steps</span>
               <div className="flex items-center gap-2">
-                <div className="w-24 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                <div className="w-24 h-1.5 bg-black/5 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full bg-accent-blue"
                     style={{

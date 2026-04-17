@@ -75,7 +75,7 @@ export function PaceChart({ splits, avgPace }: PaceChartProps) {
         <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <CartesianGrid
             strokeDasharray="3 3"
-            stroke="rgba(255,255,255,0.04)"
+            stroke="rgba(0,0,0,0.05)"
             vertical={false}
           />
           <XAxis

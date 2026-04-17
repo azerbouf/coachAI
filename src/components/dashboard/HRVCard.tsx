@@ -8,6 +8,8 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { Heart } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { DailyWellness, HRVStatus } from '@/types/recovery';
 
@@ -68,23 +70,21 @@ export function HRVCard({ latest, history }: HRVCardProps) {
       : 0;
 
   return (
-    <div className="card h-full">
+    <Card className="h-full">
+      <CardContent className="p-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Heart className="w-4 h-4" style={{ color: config.color }} />
-          <span className="text-sm font-medium text-text-secondary">HRV Status</span>
+          <span className="text-sm font-medium text-muted-foreground">HRV Status</span>
         </div>
-        <span
-          className="badge"
-          style={{
-            color: config.color,
-            backgroundColor: config.bg,
-            border: `1px solid ${config.border}`,
-          }}
+        <Badge
+          variant="outline"
+          className="text-[10px] font-semibold uppercase tracking-wide"
+          style={{ color: config.color, backgroundColor: config.bg, border: `1px solid ${config.border}` }}
         >
           {config.label}
-        </span>
+        </Badge>
       </div>
 
       {/* HRV value */}
@@ -160,10 +160,11 @@ export function HRVCard({ latest, history }: HRVCardProps) {
       )}
 
       {!currentHRV && (
-        <div className="text-xs text-text-muted mt-2">
+        <div className="text-xs text-muted-foreground mt-2">
           Sync Garmin data to see HRV trends
         </div>
       )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -276,7 +276,11 @@ export function transformWellness(
       ? safeNum(hrv.hrvSummary?.baseline?.balancedUpper)
       : null,
     hrv_status: hrvStatus,
-    sleep_score: safeNum(sleepSummary.sleepScores as unknown),
+    sleep_score: safeNum(
+      (sleepSummary.sleepScores as Record<string, unknown> | null)?.overall
+        ? ((sleepSummary.sleepScores as Record<string, Record<string, unknown>>).overall?.value)
+        : sleepSummary.sleepScores
+    ),
     sleep_duration_seconds: safeNum(sleepSummary.sleepTimeSeconds as unknown),
     sleep_deep_seconds: safeNum(sleepSummary.deepSleepSeconds as unknown),
     sleep_rem_seconds: safeNum(sleepSummary.remSleepSeconds as unknown),

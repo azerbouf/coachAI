@@ -176,7 +176,7 @@ export function MarathonCalendar({ weeks, currentWeek }: MarathonCalendarProps) 
                     const workout = workoutByDay[dayIdx];
                     if (!workout) return (
                       <td key={dayIdx} className="py-1 px-0.5">
-                        <div className="w-full min-h-[52px] rounded-lg bg-white/2" />
+                        <div className="w-full min-h-[52px] rounded-lg bg-black/2" />
                       </td>
                     );
                     const isToday = workout.scheduledDate === today;
@@ -251,7 +251,7 @@ export function MarathonCalendar({ weeks, currentWeek }: MarathonCalendarProps) 
                     <div className="text-[11px] font-semibold text-text-primary">42.195km</div>
                   </div>
                 ) : (
-                  <div className="w-full min-h-[52px] rounded-lg bg-white/2" />
+                  <div className="w-full min-h-[52px] rounded-lg bg-black/2" />
                 )}
               </td>
             ))}

@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { ActivityCard } from '@/components/activities/ActivityCard';
 import { EmptyState } from '@/components/shared/EmptyState';
+import { Button } from '@/components/ui/button';
 import { Activity as ActivityIcon } from 'lucide-react';
 import type { Activity } from '@/types/activity';
 
@@ -62,12 +63,21 @@ export default async function ActivitiesPage({
   if (!user) return null;
 
   const page = parseInt(searchParams.page ?? '1', 10);
-  const pageSize = 20;
+  const pageSize = 10;
   const offset = (page - 1) * pageSize;
+
+  // Only select columns needed for the list view — skip splits/hr_zones/dynamics (large JSON)
+  const LIST_COLUMNS = [
+    'id', 'user_id', 'garmin_activity_id', 'name', 'activity_type',
+    'start_time', 'end_time', 'duration_seconds', 'distance_meters',
+    'avg_pace_seconds_per_km', 'elevation_gain_meters',
+    'avg_hr', 'calories', 'training_effect_aerobic', 'is_analyzed',
+    'created_at', 'updated_at',
+  ].join(', ');
 
   let query = supabase
     .from('activities')
-    .select('*', { count: 'exact' })
+    .select(LIST_COLUMNS, { count: 'exact' })
     .eq('user_id', user.id)
     .order('start_time', { ascending: false })
     .range(offset, offset + pageSize - 1);
@@ -76,28 +86,24 @@ export default async function ActivitiesPage({
     query = query.ilike('activity_type', `%${searchParams.type}%`);
   }
 
-  const { data: rawActivities, count } = await query;
+  // Run activity fetch and verdict fetch in parallel
+  const [{ data: rawActivities, count }, { data: analyses }] = await Promise.all([
+    query,
+    supabase
+      .from('coach_analyses')
+      .select('activity_id, headline')
+      .eq('user_id', user.id)
+      .eq('analysis_type', 'activity')
+      .range(offset, offset + pageSize - 1),
+  ]);
+
   const activities = (rawActivities ?? []).map((a) =>
     mapActivity(a as unknown as Record<string, unknown>)
   );
 
-  // Fetch coach verdicts for analyzed activities
-  const analyzedIds = activities
-    .filter((a) => a.isAnalyzed)
-    .map((a) => a.id);
-
-  let verdicts: Record<string, string> = {};
-  if (analyzedIds.length > 0) {
-    const { data: analyses } = await supabase
-      .from('coach_analyses')
-      .select('activity_id, headline')
-      .eq('user_id', user.id)
-      .in('activity_id', analyzedIds);
-
-    verdicts = Object.fromEntries(
-      (analyses ?? []).map((a) => [a.activity_id, a.headline])
-    );
-  }
+  const verdicts: Record<string, string> = Object.fromEntries(
+    (analyses ?? []).map((a) => [a.activity_id, a.headline])
+  );
 
   const totalPages = Math.ceil((count ?? 0) / pageSize);
   const activeType = searchParams.type ?? 'all';
@@ -121,17 +127,16 @@ export default async function ActivitiesPage({
           { value: 'running', label: 'Road' },
           { value: 'trail', label: 'Trail' },
         ].map((filter) => (
-          <a
+          <Button
             key={filter.value}
-            href={`/activities${filter.value !== 'all' ? `?type=${filter.value}` : ''}`}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              activeType === filter.value
-                ? 'bg-accent-purple/15 text-accent-purple border border-accent-purple/30'
-                : 'text-text-secondary hover:text-text-primary border border-border hover:border-white/20'
-            }`}
+            variant={activeType === filter.value ? 'default' : 'outline'}
+            size="sm"
+            asChild
           >
-            {filter.label}
-          </a>
+            <a href={`/activities${filter.value !== 'all' ? `?type=${filter.value}` : ''}`}>
+              {filter.label}
+            </a>
+          </Button>
         ))}
       </div>
 
@@ -158,23 +163,21 @@ export default async function ActivitiesPage({
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 pt-2">
           {page > 1 && (
-            <a
-              href={`/activities?page=${page - 1}${searchParams.type ? `&type=${searchParams.type}` : ''}`}
-              className="btn btn-secondary text-sm"
-            >
-              Previous
-            </a>
+            <Button variant="outline" size="sm" asChild>
+              <a href={`/activities?page=${page - 1}${searchParams.type ? `&type=${searchParams.type}` : ''}`}>
+                Previous
+              </a>
+            </Button>
           )}
           <span className="text-sm text-text-muted">
             Page {page} of {totalPages}
           </span>
           {page < totalPages && (
-            <a
-              href={`/activities?page=${page + 1}${searchParams.type ? `&type=${searchParams.type}` : ''}`}
-              className="btn btn-secondary text-sm"
-            >
-              Next
-            </a>
+            <Button variant="outline" size="sm" asChild>
+              <a href={`/activities?page=${page + 1}${searchParams.type ? `&type=${searchParams.type}` : ''}`}>
+                Next
+              </a>
+            </Button>
           )}
         </div>
       )}
